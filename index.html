@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#4f46e5">
+  <title>Expense Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --primary: #4f46e5;
+      --primary-dark: #4338ca;
+      --primary-light: #e0e7ff;
+      --danger: #ef4444;
+      --danger-dark: #dc2626;
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #1e293b;
+      --text-secondary: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* Header */
+    .header {
+      background: var(--primary);
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; }
+    .header-left { display: flex; align-items: center; gap: 12px; }
+    .back-btn, .settings-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .back-btn:active, .settings-btn:active { opacity: 0.7; }
+
+    /* Content area */
+    .content { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+    /* Card row: card + increment button side by side */
+    .card-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+      align-items: stretch;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.1s;
+      flex: 1;
+      min-width: 0;
+    }
+    .card:active { transform: scale(0.98); }
+    .card-name { font-weight: 500; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-amount { font-weight: 600; font-size: 16px; color: var(--primary); white-space: nowrap; margin-left: 8px; }
+
+    /* Quick increment button on home cards */
+    .card-increment {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.15s;
+      box-shadow: var(--shadow);
+    }
+    .card-increment:active { transform: scale(0.95); background: var(--primary-dark); }
+    .card-increment.flash { background: #22c55e; }
+
+    /* Add expense button on home cards */
+    .card-expense-btn {
+      background: var(--surface);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 12px 12px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.1s, background 0.15s;
+      box-shadow: var(--shadow);
+    }
+    .card-expense-btn:active { transform: scale(0.95); background: var(--primary-light); }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-secondary);
+    }
+    .empty-state p { margin-bottom: 8px; }
+    .empty-state .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      min-height: 44px;
+      transition: transform 0.1s;
+      width: 100%;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:active { background: var(--primary-dark); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:active { background: var(--danger-dark); }
+    .btn-outline {
+      background: var(--surface);
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+    .btn-outline:active { background: var(--primary-light); }
+
+    /* Increment button */
+    .increment-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      padding: 32px;
+      font-size: 24px;
+      font-weight: 700;
+      cursor: pointer;
+      width: 100%;
+      margin: 16px 0;
+      min-height: 88px;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .increment-btn:active { transform: scale(0.96); background: var(--primary-dark); }
+    .increment-btn.flash {
+      background: #22c55e;
+      transform: scale(0.96);
+    }
+
+    /* Forms */
+    .form-group { margin-bottom: 16px; }
+    .form-group label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-group input:focus { border-color: var(--primary); }
+
+    /* Inline form */
+    .inline-form {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px;
+      margin-bottom: 16px;
+      display: none;
+    }
+    .inline-form.open { display: block; }
+    .inline-form .form-row {
+      display: flex;
+      gap: 8px;
+    }
+    .inline-form .form-row input { flex: 1; }
+    .inline-form .form-row .btn { width: auto; padding: 12px 20px; }
+
+    /* Expense list */
+    .expense-list { margin-top: 24px; }
+    .expense-list h3 {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+    .expense-item {
+      background: var(--surface);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .expense-info { flex: 1; }
+    .expense-amount { font-weight: 600; font-size: 16px; }
+    .expense-note { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
+    .expense-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .delete-btn {
+      background: none;
+      border: none;
+      color: var(--danger);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0.6;
+    }
+    .delete-btn:active { opacity: 1; }
+
+    /* Person total */
+    .person-total {
+      text-align: center;
+      padding: 8px 0 0;
+    }
+    .person-total .amount {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+    .person-total .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Delete person */
+    .card-delete {
+      color: var(--danger);
+      font-size: 18px;
+      padding: 8px;
+      min-width: 44px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .card:hover .card-delete,
+    .card:active .card-delete { opacity: 0.6; }
+    .card-delete:active { opacity: 1 !important; }
+    .card-content { flex: 1; display: flex; justify-content: space-between; align-items: center; }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #1e293b;
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      z-index: 100;
+      transition: transform 0.3s ease;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* Settings saved indicator */
+    .saved-msg {
+      color: #22c55e;
+      font-size: 14px;
+      font-weight: 500;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .saved-msg.show { opacity: 1; }
+
+    /* localStorage warning */
+    .storage-warning {
+      background: #fef3c7;
+      color: #92400e;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="storage-warning" class="storage-warning" style="display:none">
+  localStorage is unavailable. Your data will not be saved.
+</div>
+
+<!-- HOME VIEW -->
+<div id="view-home" class="view">
+  <div class="header">
+    <div class="header-left">
+      <h1>Expense Tracker</h1>
+    </div>
+    <button class="settings-btn" onclick="navigateTo('settings')" aria-label="Settings">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+  <div class="content">
+    <div id="people-list"></div>
+    <button class="btn btn-outline" onclick="toggleAddPerson()" id="add-person-toggle">+ Add Person</button>
+    <div id="add-person-form" class="inline-form">
+      <div class="form-row">
+        <input type="text" id="person-name-input" placeholder="Person name" maxlength="50" autocomplete="off">
+        <button class="btn btn-primary" onclick="addPerson()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSON DETAIL VIEW -->
+<div id="view-person" class="view">
+  <div class="header">
+    <div class="header-left">
+      <button class="back-btn" onclick="navigateTo('')" aria-label="Go back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h1 id="person-name"></h1>
+    </div>
+  </div>
+  <div class="content">
+    <div class="person-total">
+      <div class="amount" id="person-total-amount"></div>
+      <div class="label">Total Expenses</div>
+    </div>
+
+    <button class="increment-btn" id="increment-btn" onclick="quickIncrement()"></button>
+
+    <button class="btn btn-outline" onclick="toggleAddExpense()" id="add-expense-toggle">+ Add Custom Expense</button>
+    <div id="add-expense-form" class="inline-form">
+      <div class="form-group">
+        <label for="expense-amount-input">Amount</label>
+        <input type="number" id="expense-amount-input" placeholder="Enter amount" min="1" max="999999" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label for="expense-note-input">Note (optional)</label>
+        <input type="text" id="expense-note-input" placeholder="What was this for?" maxlength="200" autocomplete="off">
+      </div>
+      <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+    </div>
+
+    <div class="expense-list">
+      <h3>Expense History</h3>
+      <div id="expense-list-items"></div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS VIEW -->
+<div id="view-settings" class="view">
+  <div class="header">
+    <div class="header-left">
+      <button class="back-btn" onclick="navigateTo('')" aria-label="Go back">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </button>
+      <h1>Settings</h1>
+    </div>
+  </div>
+  <div class="content">
+    <div class="form-group">
+      <label for="increment-amount-input">Quick Increment Amount</label>
+      <input type="number" id="increment-amount-input" min="1" max="999999" inputmode="numeric">
+    </div>
+    <button class="btn btn-primary" onclick="saveSettings()">Save</button>
+    <span class="saved-msg" id="saved-msg">Saved!</span>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
+<script>
+  // ── Storage Check ──
+  const storageAvailable = (() => {
+    try {
+      const t = '__test__';
+      localStorage.setItem(t, t);
+      localStorage.removeItem(t);
+      return true;
+    } catch { return false; }
+  })();
+
+  if (!storageAvailable) {
+    document.getElementById('storage-warning').style.display = 'block';
+  }
+
+  // ── Store ──
+  const Store = {
+    _get(key) {
+      if (!storageAvailable) return null;
+      try { return JSON.parse(localStorage.getItem(key)); } catch { return null; }
+    },
+    _set(key, val) {
+      if (!storageAvailable) return;
+      localStorage.setItem(key, JSON.stringify(val));
+    },
+
+    getPeople() {
+      return (this._get('et_people') || []).sort((a, b) => a.name.localeCompare(b.name));
+    },
+    addPerson(name) {
+      const people = this._get('et_people') || [];
+      const person = { id: crypto.randomUUID(), name: name.trim(), createdAt: new Date().toISOString() };
+      people.push(person);
+      this._set('et_people', people);
+      return person;
+    },
+    deletePerson(id) {
+      const people = (this._get('et_people') || []).filter(p => p.id !== id);
+      this._set('et_people', people);
+      const expenses = (this._get('et_expenses') || []).filter(e => e.personId !== id);
+      this._set('et_expenses', expenses);
+    },
+    getPerson(id) {
+      return (this._get('et_people') || []).find(p => p.id === id) || null;
+    },
+
+    getExpenses(personId) {
+      return (this._get('et_expenses') || [])
+        .filter(e => e.personId === personId)
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    addExpense(personId, amount, note) {
+      const expenses = this._get('et_expenses') || [];
+      const expense = {
+        id: crypto.randomUUID(),
+        personId,
+        amount: Math.round(amount),
+        note: note ? note.trim().slice(0, 200) : null,
+        createdAt: new Date().toISOString()
+      };
+      expenses.push(expense);
+      this._set('et_expenses', expenses);
+      return expense;
+    },
+    deleteExpense(id) {
+      const expenses = (this._get('et_expenses') || []).filter(e => e.id !== id);
+      this._set('et_expenses', expenses);
+    },
+
+    getTotalForPerson(personId) {
+      return this.getExpenses(personId).reduce((sum, e) => sum + e.amount, 0);
+    },
+
+    getSettings() {
+      return this._get('et_settings') || { incrementAmount: 50 };
+    },
+    updateSettings(settings) {
+      this._set('et_settings', { ...this.getSettings(), ...settings });
+    }
+  };
+
+  // ── Format Helpers ──
+  function formatINR(amount) {
+    if (amount === 0) return '\u20b90';
+    const s = Math.abs(amount).toString();
+    let result;
+    if (s.length <= 3) {
+      result = s;
+    } else {
+      result = s.slice(-3);
+      let remaining = s.slice(0, -3);
+      while (remaining.length > 2) {
+        result = remaining.slice(-2) + ',' + result;
+        remaining = remaining.slice(0, -2);
+      }
+      if (remaining.length > 0) result = remaining + ',' + result;
+    }
+    return (amount < 0 ? '-' : '') + '\u20b9' + result;
+  }
+
+  function formatDate(iso) {
+    const date = new Date(iso);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHr = Math.floor(diffMs / 3600000);
+    const diffDay = Math.floor(diffMs / 86400000);
+
+    if (diffMin < 1) return 'Just now';
+    if (diffMin < 60) return diffMin + ' min ago';
+    if (diffHr < 24) return diffHr + (diffHr === 1 ? ' hour ago' : ' hours ago');
+    if (diffDay < 7) return diffDay + (diffDay === 1 ? ' day ago' : ' days ago');
+
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const d = date.getDate();
+    const m = months[date.getMonth()];
+    const y = date.getFullYear();
+    return d + ' ' + m + (y !== now.getFullYear() ? ' ' + y : '');
+  }
+
+  // ── Toast ──
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  // ── Router ──
+  let currentPersonId = null;
+
+  function navigateTo(route) {
+    location.hash = route ? '/' + route : '/';
+  }
+
+  function handleRoute() {
+    const hash = location.hash.slice(1) || '/';
+    const views = document.querySelectorAll('.view');
+    views.forEach(v => v.classList.remove('active'));
+
+    if (hash.startsWith('/person/')) {
+      const personPart = hash.split('/person/')[1];
+      const openExpenseForm = personPart.includes('?addexpense');
+      currentPersonId = personPart.split('?')[0];
+      document.getElementById('view-person').classList.add('active');
+      renderPersonDetail(openExpenseForm);
+    } else if (hash === '/settings') {
+      document.getElementById('view-settings').classList.add('active');
+      renderSettings();
+    } else {
+      currentPersonId = null;
+      document.getElementById('view-home').classList.add('active');
+      renderHome();
+    }
+  }
+
+  window.addEventListener('hashchange', handleRoute);
+
+  // ── Home View ──
+  function renderHome() {
+    const people = Store.getPeople();
+    const container = document.getElementById('people-list');
+    container.innerHTML = '';
+
+    if (people.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.innerHTML = '<span class="icon">&#128203;</span>';
+      const p = document.createElement('p');
+      p.textContent = 'No people added yet';
+      const p2 = document.createElement('p');
+      p2.textContent = 'Tap "Add Person" to get started';
+      empty.appendChild(p);
+      empty.appendChild(p2);
+      container.appendChild(empty);
+      return;
+    }
+
+    const settings = Store.getSettings();
+
+    people.forEach(person => {
+      const row = document.createElement('div');
+      row.className = 'card-row';
+
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      const content = document.createElement('div');
+      content.className = 'card-content';
+      content.onclick = () => navigateTo('person/' + person.id);
+
+      const name = document.createElement('span');
+      name.className = 'card-name';
+      name.textContent = person.name;
+
+      const amount = document.createElement('span');
+      amount.className = 'card-amount';
+      amount.textContent = formatINR(Store.getTotalForPerson(person.id));
+
+      content.appendChild(name);
+      content.appendChild(amount);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'card-delete';
+      delBtn.innerHTML = '&#10005;';
+      delBtn.setAttribute('aria-label', 'Delete ' + person.name);
+      delBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (confirm('Delete ' + person.name + ' and all their expenses?')) {
+          Store.deletePerson(person.id);
+          renderHome();
+          showToast('Deleted ' + person.name);
+        }
+      };
+
+      card.appendChild(content);
+      card.appendChild(delBtn);
+
+      // Quick increment button beside the card
+      const incBtn = document.createElement('button');
+      incBtn.className = 'card-increment';
+      incBtn.textContent = '+' + formatINR(settings.incrementAmount);
+      incBtn.setAttribute('aria-label', 'Add ' + formatINR(settings.incrementAmount) + ' to ' + person.name);
+      incBtn.onclick = () => {
+        Store.addExpense(person.id, settings.incrementAmount, null);
+        incBtn.classList.add('flash');
+        setTimeout(() => incBtn.classList.remove('flash'), 200);
+        // Update the total on the card
+        amount.textContent = formatINR(Store.getTotalForPerson(person.id));
+        showToast(person.name + ' +' + formatINR(settings.incrementAmount));
+      };
+
+      // Add Expense button beside the card
+      const expBtn = document.createElement('button');
+      expBtn.className = 'card-expense-btn';
+      expBtn.textContent = '+Exp';
+      expBtn.setAttribute('aria-label', 'Add custom expense for ' + person.name);
+      expBtn.onclick = () => navigateTo('person/' + person.id + '?addexpense');
+
+      row.appendChild(card);
+      row.appendChild(incBtn);
+      row.appendChild(expBtn);
+      container.appendChild(row);
+    });
+  }
+
+  function toggleAddPerson() {
+    const form = document.getElementById('add-person-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('person-name-input').focus();
+    }
+  }
+
+  function addPerson() {
+    const input = document.getElementById('person-name-input');
+    const name = input.value.trim();
+    if (!name) { showToast('Enter a name'); return; }
+    if (name.length > 50) { showToast('Name too long (max 50 chars)'); return; }
+
+    const existing = Store.getPeople().find(p => p.name.toLowerCase() === name.toLowerCase());
+    if (existing && !confirm(name + ' already exists. Add anyway?')) return;
+
+    Store.addPerson(name);
+    input.value = '';
+    document.getElementById('add-person-form').classList.remove('open');
+    renderHome();
+    showToast('Added ' + name);
+  }
+
+  document.getElementById('person-name-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addPerson();
+  });
+
+  // ── Person Detail View ──
+  function renderPersonDetail(openExpenseForm) {
+    const person = Store.getPerson(currentPersonId);
+    if (!person) { navigateTo(''); return; }
+
+    document.getElementById('person-name').textContent = person.name;
+
+    const total = Store.getTotalForPerson(currentPersonId);
+    document.getElementById('person-total-amount').textContent = formatINR(total);
+
+    const settings = Store.getSettings();
+    document.getElementById('increment-btn').textContent = '+ ' + formatINR(settings.incrementAmount);
+
+    // Open or close the expense form
+    const form = document.getElementById('add-expense-form');
+    if (openExpenseForm) {
+      form.classList.add('open');
+      document.getElementById('expense-amount-input').value = '';
+      document.getElementById('expense-note-input').value = '';
+      setTimeout(() => document.getElementById('expense-amount-input').focus(), 100);
+    } else {
+      form.classList.remove('open');
+    }
+
+    renderExpenseList();
+  }
+
+  function quickIncrement() {
+    const settings = Store.getSettings();
+    Store.addExpense(currentPersonId, settings.incrementAmount, null);
+    renderPersonDetail();
+
+    const btn = document.getElementById('increment-btn');
+    btn.classList.add('flash');
+    setTimeout(() => btn.classList.remove('flash'), 200);
+
+    showToast('Added ' + formatINR(settings.incrementAmount));
+  }
+
+  function toggleAddExpense() {
+    const form = document.getElementById('add-expense-form');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('expense-amount-input').value = '';
+      document.getElementById('expense-note-input').value = '';
+      document.getElementById('expense-amount-input').focus();
+    }
+  }
+
+  function addExpense() {
+    const amountInput = document.getElementById('expense-amount-input');
+    const noteInput = document.getElementById('expense-note-input');
+    const amount = parseInt(amountInput.value, 10);
+
+    if (!amount || amount < 1) { showToast('Enter a valid amount'); return; }
+    if (amount > 999999) { showToast('Amount too large (max 9,99,999)'); return; }
+
+    const note = noteInput.value.trim() || null;
+    Store.addExpense(currentPersonId, amount, note);
+    amountInput.value = '';
+    noteInput.value = '';
+    document.getElementById('add-expense-form').classList.remove('open');
+    renderPersonDetail();
+    showToast('Added ' + formatINR(amount));
+  }
+
+  document.getElementById('expense-amount-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') addExpense();
+  });
+
+  function renderExpenseList() {
+    const expenses = Store.getExpenses(currentPersonId);
+    const container = document.getElementById('expense-list-items');
+    container.innerHTML = '';
+
+    if (expenses.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'empty-state';
+      empty.style.padding = '24px';
+      const p = document.createElement('p');
+      p.textContent = 'No expenses yet';
+      empty.appendChild(p);
+      container.appendChild(empty);
+      return;
+    }
+
+    expenses.forEach(expense => {
+      const item = document.createElement('div');
+      item.className = 'expense-item';
+
+      const info = document.createElement('div');
+      info.className = 'expense-info';
+
+      const amt = document.createElement('div');
+      amt.className = 'expense-amount';
+      amt.textContent = formatINR(expense.amount);
+      info.appendChild(amt);
+
+      if (expense.note) {
+        const note = document.createElement('div');
+        note.className = 'expense-note';
+        note.textContent = expense.note;
+        info.appendChild(note);
+      }
+
+      const date = document.createElement('div');
+      date.className = 'expense-date';
+      date.textContent = formatDate(expense.createdAt);
+      info.appendChild(date);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'delete-btn';
+      delBtn.innerHTML = '&#10005;';
+      delBtn.setAttribute('aria-label', 'Delete expense');
+      delBtn.onclick = () => {
+        if (confirm('Delete this ' + formatINR(expense.amount) + ' expense?')) {
+          Store.deleteExpense(expense.id);
+          renderPersonDetail();
+          showToast('Expense deleted');
+        }
+      };
+
+      item.appendChild(info);
+      item.appendChild(delBtn);
+      container.appendChild(item);
+    });
+  }
+
+  // ── Settings View ──
+  function renderSettings() {
+    const settings = Store.getSettings();
+    document.getElementById('increment-amount-input').value = settings.incrementAmount;
+    document.getElementById('saved-msg').classList.remove('show');
+  }
+
+  function saveSettings() {
+    const input = document.getElementById('increment-amount-input');
+    const amount = parseInt(input.value, 10);
+    if (!amount || amount < 1) { showToast('Enter a valid amount'); return; }
+    if (amount > 999999) { showToast('Amount too large'); return; }
+
+    Store.updateSettings({ incrementAmount: amount });
+    const msg = document.getElementById('saved-msg');
+    msg.classList.add('show');
+    setTimeout(() => msg.classList.remove('show'), 2000);
+    showToast('Increment set to ' + formatINR(amount));
+  }
+
+  // ── Init ──
+  handleRoute();
+  if (!location.hash || location.hash === '#') location.hash = '/';
+</script>
+</body>
+</html>
