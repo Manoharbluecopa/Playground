@@ -4,25 +4,29 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#4f46e5">
-  <title>Expense Tracker</title>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#ffffff">
+  <title>Split Settle</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --primary: #4f46e5;
-      --primary-dark: #4338ca;
-      --primary-light: #e0e7ff;
-      --danger: #ef4444;
-      --danger-dark: #dc2626;
-      --bg: #f8fafc;
+      --primary: #111827;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --green: #16a34a;
+      --green-light: #f0fdf4;
+      --red: #dc2626;
+      --red-light: #fef2f2;
+      --bg: #ffffff;
+      --bg-secondary: #f9fafb;
       --surface: #ffffff;
-      --text: #1e293b;
-      --text-secondary: #64748b;
-      --border: #e2e8f0;
-      --radius: 12px;
-      --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+      --text: #111827;
+      --text-secondary: #6b7280;
+      --text-tertiary: #9ca3af;
+      --border: #e5e7eb;
+      --border-light: #f3f4f6;
+      --radius: 10px;
     }
 
     body {
@@ -38,8 +42,7 @@
 
     /* Header */
     .header {
-      background: var(--primary);
-      color: white;
+      background: var(--bg);
       padding: 16px 20px;
       display: flex;
       align-items: center;
@@ -47,94 +50,160 @@
       position: sticky;
       top: 0;
       z-index: 10;
+      border-bottom: 1px solid var(--border);
     }
-    .header h1 { font-size: 18px; font-weight: 600; }
+    .header h1 { font-size: 18px; font-weight: 700; color: var(--text); }
     .header-left { display: flex; align-items: center; gap: 12px; }
-    .back-btn, .settings-btn {
+    .back-btn, .icon-btn {
       background: none;
       border: none;
-      color: white;
-      font-size: 22px;
+      color: var(--text);
+      font-size: 20px;
       cursor: pointer;
       padding: 4px;
-      line-height: 1;
       min-width: 44px;
       min-height: 44px;
       display: flex;
       align-items: center;
       justify-content: center;
     }
-    .back-btn:active, .settings-btn:active { opacity: 0.7; }
+    .back-btn:active, .icon-btn:active { opacity: 0.5; }
 
-    /* Content area */
-    .content { padding: 16px; max-width: 480px; margin: 0 auto; }
+    /* Content */
+    .content { padding: 20px; max-width: 480px; margin: 0 auto; }
 
-    /* Card row: card + increment button side by side */
+    /* Summary Dashboard */
+    .dashboard {
+      margin-bottom: 24px;
+    }
+    .dashboard-total {
+      text-align: center;
+      padding: 24px 0 16px;
+    }
+    .dashboard-total .label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .dashboard-total .amount {
+      font-size: 40px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -1px;
+    }
+    .dashboard-stats {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .stat-card {
+      flex: 1;
+      padding: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-align: center;
+    }
+    .stat-card .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .stat-card .stat-label {
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      margin-top: 2px;
+    }
+
+    /* Section headers */
+    .section-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0 0 10px;
+    }
+
+    /* Card row */
     .card-row {
       display: flex;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       align-items: stretch;
     }
 
-    /* Cards */
+    /* People cards */
     .card {
       background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 16px;
+      padding: 14px 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: transform 0.1s;
       flex: 1;
       min-width: 0;
+      transition: background 0.15s;
     }
-    .card:active { transform: scale(0.98); }
-    .card-name { font-weight: 500; font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .card-amount { font-weight: 600; font-size: 16px; color: var(--primary); white-space: nowrap; margin-left: 8px; }
-
-    /* Quick increment button on home cards */
-    .card-increment {
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: var(--radius);
-      padding: 12px 16px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
+    .card:active { background: var(--bg-secondary); }
+    .card-content { flex: 1; display: flex; justify-content: space-between; align-items: center; min-width: 0; }
+    .card-name { font-weight: 600; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .card-due {
+      text-align: right;
       white-space: nowrap;
-      min-width: 72px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s, background 0.15s;
-      box-shadow: var(--shadow);
+      margin-left: 12px;
     }
-    .card-increment:active { transform: scale(0.95); background: var(--primary-dark); }
-    .card-increment.flash { background: #22c55e; }
+    .card-due .due-amount { font-weight: 700; font-size: 15px; color: var(--text); }
+    .card-due .due-label { font-size: 11px; color: var(--text-tertiary); }
 
-    /* Add expense button on home cards */
-    .card-expense-btn {
-      background: var(--surface);
-      color: var(--primary);
-      border: 2px solid var(--primary);
+    /* Action buttons on cards */
+    .card-action {
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      padding: 12px 12px;
-      font-size: 13px;
+      padding: 10px 12px;
+      font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       white-space: nowrap;
-      min-width: 56px;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: transform 0.1s, background 0.15s;
-      box-shadow: var(--shadow);
+      transition: background 0.15s;
+      min-width: 52px;
     }
-    .card-expense-btn:active { transform: scale(0.95); background: var(--primary-light); }
+    .card-action:active { opacity: 0.7; }
+    .card-action.increment {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+    }
+    .card-action.increment.flash { background: var(--green); border-color: var(--green); }
+    .card-action.expense {
+      background: var(--surface);
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    /* Delete button on card */
+    .card-delete {
+      color: var(--text-tertiary);
+      font-size: 16px;
+      padding: 4px 8px;
+      min-width: 36px;
+      min-height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+    }
+    .card-delete:active { color: var(--red); }
 
     /* Empty state */
     .empty-state {
@@ -142,8 +211,8 @@
       padding: 48px 20px;
       color: var(--text-secondary);
     }
-    .empty-state p { margin-bottom: 8px; }
-    .empty-state .icon { font-size: 48px; margin-bottom: 16px; display: block; }
+    .empty-state .icon { font-size: 40px; margin-bottom: 12px; display: block; opacity: 0.4; }
+    .empty-state p { margin-bottom: 4px; font-size: 14px; }
 
     /* Buttons */
     .btn {
@@ -153,112 +222,131 @@
       padding: 12px 24px;
       border: none;
       border-radius: var(--radius);
-      font-size: 16px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 600;
       cursor: pointer;
       min-height: 44px;
-      transition: transform 0.1s;
       width: 100%;
+      transition: opacity 0.15s;
     }
-    .btn:active { transform: scale(0.97); }
+    .btn:active { opacity: 0.8; }
     .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:active { background: var(--primary-dark); }
-    .btn-danger { background: var(--danger); color: white; }
-    .btn-danger:active { background: var(--danger-dark); }
-    .btn-outline {
-      background: var(--surface);
-      color: var(--primary);
-      border: 2px solid var(--primary);
-    }
-    .btn-outline:active { background: var(--primary-light); }
+    .btn-accent { background: var(--accent); color: white; }
+    .btn-green { background: var(--green); color: white; }
+    .btn-outline { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
 
-    /* Increment button */
+    /* Increment button (person detail) */
     .increment-btn {
-      background: var(--primary);
+      background: var(--accent);
       color: white;
       border: none;
       border-radius: var(--radius);
-      padding: 32px;
-      font-size: 24px;
+      padding: 24px;
+      font-size: 22px;
       font-weight: 700;
       cursor: pointer;
       width: 100%;
       margin: 16px 0;
-      min-height: 88px;
-      transition: transform 0.1s, background 0.15s;
+      min-height: 72px;
+      transition: opacity 0.15s, background 0.15s;
     }
-    .increment-btn:active { transform: scale(0.96); background: var(--primary-dark); }
-    .increment-btn.flash {
-      background: #22c55e;
-      transform: scale(0.96);
+    .increment-btn:active { opacity: 0.8; }
+    .increment-btn.flash { background: var(--green); }
+
+    /* Person detail header */
+    .person-summary {
+      text-align: center;
+      padding: 20px 0;
     }
+    .person-summary .due-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .person-summary .due-amount {
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--text);
+      margin: 4px 0;
+      letter-spacing: -1px;
+    }
+    .person-summary .settled { color: var(--green); }
+
+    /* Action row in person detail */
+    .action-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .action-row .btn { flex: 1; }
 
     /* Forms */
-    .form-group { margin-bottom: 16px; }
+    .form-group { margin-bottom: 14px; }
     .form-group label {
       display: block;
-      font-size: 14px;
-      font-weight: 500;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--text-secondary);
       margin-bottom: 6px;
     }
     .form-group input {
       width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--border);
+      padding: 12px 14px;
+      border: 1px solid var(--border);
       border-radius: var(--radius);
       font-size: 16px;
       outline: none;
+      background: var(--bg);
       transition: border-color 0.2s;
     }
-    .form-group input:focus { border-color: var(--primary); }
+    .form-group input:focus { border-color: var(--accent); }
 
     /* Inline form */
     .inline-form {
-      background: var(--surface);
+      border: 1px solid var(--border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
       padding: 16px;
       margin-bottom: 16px;
       display: none;
     }
     .inline-form.open { display: block; }
-    .inline-form .form-row {
-      display: flex;
-      gap: 8px;
-    }
+    .inline-form .form-row { display: flex; gap: 8px; }
     .inline-form .form-row input { flex: 1; }
     .inline-form .form-row .btn { width: auto; padding: 12px 20px; }
 
-    /* Expense list */
-    .expense-list { margin-top: 24px; }
-    .expense-list h3 {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-    }
-    .expense-item {
-      background: var(--surface);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 12px 16px;
-      margin-bottom: 8px;
+    /* History list */
+    .history-list { margin-top: 20px; }
+    .history-item {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-light);
     }
-    .expense-info { flex: 1; }
-    .expense-amount { font-weight: 600; font-size: 16px; }
-    .expense-note { font-size: 13px; color: var(--text-secondary); margin-top: 2px; }
-    .expense-date { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+    .history-item:last-child { border-bottom: none; }
+    .history-info { flex: 1; }
+    .history-amount { font-weight: 700; font-size: 15px; }
+    .history-amount.expense-type { color: var(--red); }
+    .history-amount.payment-type { color: var(--green); }
+    .history-note { font-size: 13px; color: var(--text-secondary); margin-top: 1px; }
+    .history-date { font-size: 12px; color: var(--text-tertiary); margin-top: 1px; }
+    .history-tag {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+    .tag-expense { background: var(--red-light); color: var(--red); }
+    .tag-payment { background: var(--green-light); color: var(--green); }
     .delete-btn {
       background: none;
       border: none;
-      color: var(--danger);
-      font-size: 18px;
+      color: var(--text-tertiary);
+      font-size: 16px;
       cursor: pointer;
       padding: 8px;
       min-width: 44px;
@@ -266,46 +354,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.6;
     }
-    .delete-btn:active { opacity: 1; }
-
-    /* Person total */
-    .person-total {
-      text-align: center;
-      padding: 8px 0 0;
-    }
-    .person-total .amount {
-      font-size: 36px;
-      font-weight: 700;
-      color: var(--primary);
-    }
-    .person-total .label {
-      font-size: 13px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-    }
-
-    /* Delete person */
-    .card-delete {
-      color: var(--danger);
-      font-size: 18px;
-      padding: 8px;
-      min-width: 44px;
-      min-height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.2s;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-    .card:hover .card-delete,
-    .card:active .card-delete { opacity: 0.6; }
-    .card-delete:active { opacity: 1 !important; }
-    .card-content { flex: 1; display: flex; justify-content: space-between; align-items: center; }
+    .delete-btn:active { color: var(--red); }
 
     /* Toast */
     .toast {
@@ -313,35 +363,62 @@
       bottom: 24px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background: #1e293b;
+      background: var(--primary);
       color: white;
-      padding: 12px 24px;
+      padding: 10px 20px;
       border-radius: 8px;
       font-size: 14px;
+      font-weight: 500;
       z-index: 100;
       transition: transform 0.3s ease;
       white-space: nowrap;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* Settings saved indicator */
+    /* Saved message */
     .saved-msg {
-      color: #22c55e;
+      color: var(--green);
       font-size: 14px;
       font-weight: 500;
       opacity: 0;
       transition: opacity 0.3s;
+      margin-left: 12px;
     }
     .saved-msg.show { opacity: 1; }
 
-    /* localStorage warning */
+    /* Storage warning */
     .storage-warning {
-      background: #fef3c7;
+      background: #fffbeb;
       color: #92400e;
-      padding: 12px 16px;
+      padding: 10px 16px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
+      border-bottom: 1px solid #fde68a;
     }
+
+    /* Recent activity */
+    .recent-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-light);
+    }
+    .recent-item:last-child { border-bottom: none; }
+    .recent-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .recent-dot.expense { background: var(--red); }
+    .recent-dot.payment { background: var(--green); }
+    .recent-text { flex: 1; font-size: 13px; color: var(--text-secondary); }
+    .recent-text strong { color: var(--text); font-weight: 600; }
+    .recent-time { font-size: 11px; color: var(--text-tertiary); white-space: nowrap; }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
   </style>
 </head>
 <body>
@@ -354,21 +431,23 @@
 <div id="view-home" class="view">
   <div class="header">
     <div class="header-left">
-      <h1>Expense Tracker</h1>
+      <h1>Split Settle</h1>
     </div>
-    <button class="settings-btn" onclick="navigateTo('settings')" aria-label="Settings">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    <button class="icon-btn" onclick="navigateTo('settings')" aria-label="Settings">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
   </div>
   <div class="content">
+    <div id="dashboard"></div>
     <div id="people-list"></div>
-    <button class="btn btn-outline" onclick="toggleAddPerson()" id="add-person-toggle">+ Add Person</button>
-    <div id="add-person-form" class="inline-form">
+    <button class="btn btn-outline" onclick="toggleAddPerson()" id="add-person-toggle" style="margin-top:8px">+ Add Person</button>
+    <div id="add-person-form" class="inline-form" style="margin-top:12px">
       <div class="form-row">
         <input type="text" id="person-name-input" placeholder="Person name" maxlength="50" autocomplete="off">
         <button class="btn btn-primary" onclick="addPerson()">Add</button>
       </div>
     </div>
+    <div id="recent-activity" style="margin-top:20px"></div>
   </div>
 </div>
 
@@ -377,20 +456,24 @@
   <div class="header">
     <div class="header-left">
       <button class="back-btn" onclick="navigateTo('')" aria-label="Go back">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
       <h1 id="person-name"></h1>
     </div>
   </div>
   <div class="content">
-    <div class="person-total">
-      <div class="amount" id="person-total-amount"></div>
-      <div class="label">Total Expenses</div>
+    <div class="person-summary">
+      <div class="due-label">Due</div>
+      <div class="due-amount" id="person-due-amount"></div>
     </div>
 
     <button class="increment-btn" id="increment-btn" onclick="quickIncrement()"></button>
 
-    <button class="btn btn-outline" onclick="toggleAddExpense()" id="add-expense-toggle">+ Add Custom Expense</button>
+    <div class="action-row">
+      <button class="btn btn-outline" onclick="toggleAddExpense()">+ Expense</button>
+      <button class="btn btn-green" onclick="toggleSettleForm()">Settle</button>
+    </div>
+
     <div id="add-expense-form" class="inline-form">
       <div class="form-group">
         <label for="expense-amount-input">Amount</label>
@@ -400,12 +483,27 @@
         <label for="expense-note-input">Note (optional)</label>
         <input type="text" id="expense-note-input" placeholder="What was this for?" maxlength="200" autocomplete="off">
       </div>
-      <button class="btn btn-primary" onclick="addExpense()">Add Expense</button>
+      <button class="btn btn-accent" onclick="addExpense()">Add Expense</button>
     </div>
 
-    <div class="expense-list">
-      <h3>Expense History</h3>
-      <div id="expense-list-items"></div>
+    <div id="settle-form" class="inline-form">
+      <div class="form-group">
+        <label for="settle-amount-input">Payment Amount</label>
+        <input type="number" id="settle-amount-input" placeholder="Amount paid" min="1" max="999999" inputmode="numeric">
+      </div>
+      <div class="form-group">
+        <label for="settle-note-input">Note (optional)</label>
+        <input type="text" id="settle-note-input" placeholder="e.g. UPI, Cash" maxlength="200" autocomplete="off">
+      </div>
+      <div class="action-row">
+        <button class="btn btn-outline" id="settle-full-btn" onclick="settleFull()">Pay Full</button>
+        <button class="btn btn-green" onclick="settlePartial()">Record Payment</button>
+      </div>
+    </div>
+
+    <div class="history-list">
+      <div class="section-header">History</div>
+      <div id="history-items"></div>
     </div>
   </div>
 </div>
@@ -415,7 +513,7 @@
   <div class="header">
     <div class="header-left">
       <button class="back-btn" onclick="navigateTo('')" aria-label="Go back">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </button>
       <h1>Settings</h1>
     </div>
@@ -472,38 +570,55 @@
     deletePerson(id) {
       const people = (this._get('et_people') || []).filter(p => p.id !== id);
       this._set('et_people', people);
-      const expenses = (this._get('et_expenses') || []).filter(e => e.personId !== id);
-      this._set('et_expenses', expenses);
+      const entries = (this._get('et_entries') || []).filter(e => e.personId !== id);
+      this._set('et_entries', entries);
     },
     getPerson(id) {
       return (this._get('et_people') || []).find(p => p.id === id) || null;
     },
 
-    getExpenses(personId) {
-      return (this._get('et_expenses') || [])
+    // Entries: both expenses and payments
+    getEntries(personId) {
+      return (this._get('et_entries') || [])
         .filter(e => e.personId === personId)
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
     },
-    addExpense(personId, amount, note) {
-      const expenses = this._get('et_expenses') || [];
-      const expense = {
+    getAllEntries() {
+      return (this._get('et_entries') || [])
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    },
+    addEntry(personId, amount, type, note) {
+      const entries = this._get('et_entries') || [];
+      const entry = {
         id: crypto.randomUUID(),
         personId,
-        amount: Math.round(amount),
+        amount: Math.round(Math.abs(amount)),
+        type, // 'expense' or 'payment'
         note: note ? note.trim().slice(0, 200) : null,
         createdAt: new Date().toISOString()
       };
-      expenses.push(expense);
-      this._set('et_expenses', expenses);
-      return expense;
+      entries.push(entry);
+      this._set('et_entries', entries);
+      return entry;
     },
-    deleteExpense(id) {
-      const expenses = (this._get('et_expenses') || []).filter(e => e.id !== id);
-      this._set('et_expenses', expenses);
+    deleteEntry(id) {
+      const entries = (this._get('et_entries') || []).filter(e => e.id !== id);
+      this._set('et_entries', entries);
     },
 
-    getTotalForPerson(personId) {
-      return this.getExpenses(personId).reduce((sum, e) => sum + e.amount, 0);
+    getDueForPerson(personId) {
+      const entries = this.getEntries(personId);
+      return entries.reduce((sum, e) => {
+        return e.type === 'expense' ? sum + e.amount : sum - e.amount;
+      }, 0);
+    },
+
+    getTotalDue() {
+      const people = this.getPeople();
+      return people.reduce((sum, p) => {
+        const due = this.getDueForPerson(p.id);
+        return sum + Math.max(0, due);
+      }, 0);
     },
 
     getSettings() {
@@ -511,8 +626,31 @@
     },
     updateSettings(settings) {
       this._set('et_settings', { ...this.getSettings(), ...settings });
+    },
+
+    // Migrate old data format (et_expenses -> et_entries)
+    migrate() {
+      const oldExpenses = this._get('et_expenses');
+      if (oldExpenses && oldExpenses.length > 0) {
+        const entries = this._get('et_entries') || [];
+        oldExpenses.forEach(e => {
+          entries.push({
+            id: e.id,
+            personId: e.personId,
+            amount: e.amount,
+            type: 'expense',
+            note: e.note || null,
+            createdAt: e.createdAt
+          });
+        });
+        this._set('et_entries', entries);
+        localStorage.removeItem('et_expenses');
+      }
     }
   };
+
+  // Run migration
+  Store.migrate();
 
   // ── Format Helpers ──
   function formatINR(amount) {
@@ -542,15 +680,12 @@
     const diffDay = Math.floor(diffMs / 86400000);
 
     if (diffMin < 1) return 'Just now';
-    if (diffMin < 60) return diffMin + ' min ago';
-    if (diffHr < 24) return diffHr + (diffHr === 1 ? ' hour ago' : ' hours ago');
-    if (diffDay < 7) return diffDay + (diffDay === 1 ? ' day ago' : ' days ago');
+    if (diffMin < 60) return diffMin + 'm ago';
+    if (diffHr < 24) return diffHr + 'h ago';
+    if (diffDay < 7) return diffDay + 'd ago';
 
     const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    const d = date.getDate();
-    const m = months[date.getMonth()];
-    const y = date.getFullYear();
-    return d + ' ' + m + (y !== now.getFullYear() ? ' ' + y : '');
+    return date.getDate() + ' ' + months[date.getMonth()] + (date.getFullYear() !== now.getFullYear() ? ' ' + date.getFullYear() : '');
   }
 
   // ── Toast ──
@@ -570,8 +705,7 @@
 
   function handleRoute() {
     const hash = location.hash.slice(1) || '/';
-    const views = document.querySelectorAll('.view');
-    views.forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
 
     if (hash.startsWith('/person/')) {
       const personPart = hash.split('/person/')[1];
@@ -591,8 +725,151 @@
 
   window.addEventListener('hashchange', handleRoute);
 
+  // ── Dashboard ──
+  function renderDashboard() {
+    const container = document.getElementById('dashboard');
+    const people = Store.getPeople();
+
+    if (people.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    const totalDue = Store.getTotalDue();
+    const peopleWithDue = people.filter(p => Store.getDueForPerson(p.id) > 0).length;
+
+    // Find who owes most
+    let maxDue = 0;
+    let maxPerson = null;
+    people.forEach(p => {
+      const due = Store.getDueForPerson(p.id);
+      if (due > maxDue) { maxDue = due; maxPerson = p; }
+    });
+
+    container.innerHTML = '';
+
+    const dashboard = document.createElement('div');
+    dashboard.className = 'dashboard';
+
+    const totalDiv = document.createElement('div');
+    totalDiv.className = 'dashboard-total';
+
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = 'Total Due to You';
+    totalDiv.appendChild(label);
+
+    const amount = document.createElement('div');
+    amount.className = 'amount';
+    amount.textContent = formatINR(totalDue);
+    totalDiv.appendChild(amount);
+
+    dashboard.appendChild(totalDiv);
+
+    const stats = document.createElement('div');
+    stats.className = 'dashboard-stats';
+
+    const stat1 = document.createElement('div');
+    stat1.className = 'stat-card';
+    const s1v = document.createElement('div');
+    s1v.className = 'stat-value';
+    s1v.textContent = people.length;
+    const s1l = document.createElement('div');
+    s1l.className = 'stat-label';
+    s1l.textContent = 'People';
+    stat1.appendChild(s1v);
+    stat1.appendChild(s1l);
+
+    const stat2 = document.createElement('div');
+    stat2.className = 'stat-card';
+    const s2v = document.createElement('div');
+    s2v.className = 'stat-value';
+    s2v.textContent = peopleWithDue;
+    const s2l = document.createElement('div');
+    s2l.className = 'stat-label';
+    s2l.textContent = 'Owe You';
+    stat2.appendChild(s2v);
+    stat2.appendChild(s2l);
+
+    const stat3 = document.createElement('div');
+    stat3.className = 'stat-card';
+    const s3v = document.createElement('div');
+    s3v.className = 'stat-value';
+    s3v.textContent = maxPerson ? maxPerson.name.slice(0, 8) : '-';
+    s3v.style.fontSize = '15px';
+    const s3l = document.createElement('div');
+    s3l.className = 'stat-label';
+    s3l.textContent = maxDue > 0 ? 'Owes Most (' + formatINR(maxDue) + ')' : 'All Settled';
+    stat3.appendChild(s3v);
+    stat3.appendChild(s3l);
+
+    stats.appendChild(stat1);
+    stats.appendChild(stat2);
+    stats.appendChild(stat3);
+    dashboard.appendChild(stats);
+
+    container.appendChild(dashboard);
+  }
+
+  // ── Recent Activity ──
+  function renderRecentActivity() {
+    const container = document.getElementById('recent-activity');
+    const entries = Store.getAllEntries().slice(0, 5);
+
+    if (entries.length === 0) {
+      container.innerHTML = '';
+      return;
+    }
+
+    container.innerHTML = '';
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.textContent = 'Recent Activity';
+    container.appendChild(header);
+
+    entries.forEach(entry => {
+      const person = Store.getPerson(entry.personId);
+      if (!person) return;
+
+      const item = document.createElement('div');
+      item.className = 'recent-item';
+
+      const dot = document.createElement('div');
+      dot.className = 'recent-dot ' + entry.type;
+
+      const text = document.createElement('div');
+      text.className = 'recent-text';
+      if (entry.type === 'expense') {
+        text.innerHTML = '';
+        const strong = document.createElement('strong');
+        strong.textContent = person.name;
+        text.appendChild(strong);
+        text.appendChild(document.createTextNode(' + ' + formatINR(entry.amount)));
+        if (entry.note) text.appendChild(document.createTextNode(' \u00b7 ' + entry.note));
+      } else {
+        const strong = document.createElement('strong');
+        strong.textContent = person.name;
+        text.appendChild(strong);
+        text.appendChild(document.createTextNode(' paid ' + formatINR(entry.amount)));
+        if (entry.note) text.appendChild(document.createTextNode(' \u00b7 ' + entry.note));
+      }
+
+      const time = document.createElement('div');
+      time.className = 'recent-time';
+      time.textContent = formatDate(entry.createdAt);
+
+      item.appendChild(dot);
+      item.appendChild(text);
+      item.appendChild(time);
+      container.appendChild(item);
+    });
+  }
+
   // ── Home View ──
   function renderHome() {
+    renderDashboard();
+
     const people = Store.getPeople();
     const container = document.getElementById('people-list');
     container.innerHTML = '';
@@ -600,20 +877,31 @@
     if (people.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
-      empty.innerHTML = '<span class="icon">&#128203;</span>';
+      const icon = document.createElement('span');
+      icon.className = 'icon';
+      icon.textContent = '\ud83d\udc65';
+      empty.appendChild(icon);
       const p = document.createElement('p');
       p.textContent = 'No people added yet';
-      const p2 = document.createElement('p');
-      p2.textContent = 'Tap "Add Person" to get started';
       empty.appendChild(p);
+      const p2 = document.createElement('p');
+      p2.textContent = 'Add someone to start tracking';
       empty.appendChild(p2);
       container.appendChild(empty);
+      renderRecentActivity();
       return;
     }
+
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.textContent = 'People';
+    container.appendChild(header);
 
     const settings = Store.getSettings();
 
     people.forEach(person => {
+      const due = Store.getDueForPerson(person.id);
+
       const row = document.createElement('div');
       row.className = 'card-row';
 
@@ -628,20 +916,28 @@
       name.className = 'card-name';
       name.textContent = person.name;
 
-      const amount = document.createElement('span');
-      amount.className = 'card-amount';
-      amount.textContent = formatINR(Store.getTotalForPerson(person.id));
+      const dueDiv = document.createElement('div');
+      dueDiv.className = 'card-due';
+      const dueAmount = document.createElement('div');
+      dueAmount.className = 'due-amount';
+      dueAmount.textContent = formatINR(due);
+      if (due <= 0) dueAmount.style.color = 'var(--green)';
+      const dueLabel = document.createElement('div');
+      dueLabel.className = 'due-label';
+      dueLabel.textContent = due > 0 ? 'due' : 'settled';
+      dueDiv.appendChild(dueAmount);
+      dueDiv.appendChild(dueLabel);
 
       content.appendChild(name);
-      content.appendChild(amount);
+      content.appendChild(dueDiv);
 
       const delBtn = document.createElement('button');
       delBtn.className = 'card-delete';
-      delBtn.innerHTML = '&#10005;';
+      delBtn.textContent = '\u00d7';
       delBtn.setAttribute('aria-label', 'Delete ' + person.name);
       delBtn.onclick = (e) => {
         e.stopPropagation();
-        if (confirm('Delete ' + person.name + ' and all their expenses?')) {
+        if (confirm('Delete ' + person.name + ' and all their history?')) {
           Store.deletePerson(person.id);
           renderHome();
           showToast('Deleted ' + person.name);
@@ -651,23 +947,26 @@
       card.appendChild(content);
       card.appendChild(delBtn);
 
-      // Quick increment button beside the card
+      // Quick increment
       const incBtn = document.createElement('button');
-      incBtn.className = 'card-increment';
+      incBtn.className = 'card-action increment';
       incBtn.textContent = '+' + formatINR(settings.incrementAmount);
       incBtn.setAttribute('aria-label', 'Add ' + formatINR(settings.incrementAmount) + ' to ' + person.name);
       incBtn.onclick = () => {
-        Store.addExpense(person.id, settings.incrementAmount, null);
+        Store.addEntry(person.id, settings.incrementAmount, 'expense', null);
         incBtn.classList.add('flash');
         setTimeout(() => incBtn.classList.remove('flash'), 200);
-        // Update the total on the card
-        amount.textContent = formatINR(Store.getTotalForPerson(person.id));
+        dueAmount.textContent = formatINR(Store.getDueForPerson(person.id));
+        dueLabel.textContent = 'due';
+        dueAmount.style.color = '';
+        renderDashboard();
+        renderRecentActivity();
         showToast(person.name + ' +' + formatINR(settings.incrementAmount));
       };
 
-      // Add Expense button beside the card
+      // Add expense
       const expBtn = document.createElement('button');
-      expBtn.className = 'card-expense-btn';
+      expBtn.className = 'card-action expense';
       expBtn.textContent = '+Exp';
       expBtn.setAttribute('aria-label', 'Add custom expense for ' + person.name);
       expBtn.onclick = () => navigateTo('person/' + person.id + '?addexpense');
@@ -677,6 +976,8 @@
       row.appendChild(expBtn);
       container.appendChild(row);
     });
+
+    renderRecentActivity();
   }
 
   function toggleAddPerson() {
@@ -714,29 +1015,38 @@
 
     document.getElementById('person-name').textContent = person.name;
 
-    const total = Store.getTotalForPerson(currentPersonId);
-    document.getElementById('person-total-amount').textContent = formatINR(total);
+    const due = Store.getDueForPerson(currentPersonId);
+    const dueEl = document.getElementById('person-due-amount');
+    dueEl.textContent = formatINR(due);
+    dueEl.className = 'due-amount' + (due <= 0 ? ' settled' : '');
 
     const settings = Store.getSettings();
     document.getElementById('increment-btn').textContent = '+ ' + formatINR(settings.incrementAmount);
 
-    // Open or close the expense form
-    const form = document.getElementById('add-expense-form');
+    // Forms
+    const expForm = document.getElementById('add-expense-form');
+    const settleForm = document.getElementById('settle-form');
+
     if (openExpenseForm) {
-      form.classList.add('open');
+      expForm.classList.add('open');
+      settleForm.classList.remove('open');
       document.getElementById('expense-amount-input').value = '';
       document.getElementById('expense-note-input').value = '';
       setTimeout(() => document.getElementById('expense-amount-input').focus(), 100);
     } else {
-      form.classList.remove('open');
+      expForm.classList.remove('open');
+      settleForm.classList.remove('open');
     }
 
-    renderExpenseList();
+    // Set settle full amount
+    document.getElementById('settle-full-btn').textContent = 'Pay Full (' + formatINR(Math.max(0, due)) + ')';
+
+    renderHistory();
   }
 
   function quickIncrement() {
     const settings = Store.getSettings();
-    Store.addExpense(currentPersonId, settings.incrementAmount, null);
+    Store.addEntry(currentPersonId, settings.incrementAmount, 'expense', null);
     renderPersonDetail();
 
     const btn = document.getElementById('increment-btn');
@@ -748,11 +1058,23 @@
 
   function toggleAddExpense() {
     const form = document.getElementById('add-expense-form');
+    document.getElementById('settle-form').classList.remove('open');
     form.classList.toggle('open');
     if (form.classList.contains('open')) {
       document.getElementById('expense-amount-input').value = '';
       document.getElementById('expense-note-input').value = '';
       document.getElementById('expense-amount-input').focus();
+    }
+  }
+
+  function toggleSettleForm() {
+    const form = document.getElementById('settle-form');
+    document.getElementById('add-expense-form').classList.remove('open');
+    form.classList.toggle('open');
+    if (form.classList.contains('open')) {
+      document.getElementById('settle-amount-input').value = '';
+      document.getElementById('settle-note-input').value = '';
+      document.getElementById('settle-amount-input').focus();
     }
   }
 
@@ -762,10 +1084,9 @@
     const amount = parseInt(amountInput.value, 10);
 
     if (!amount || amount < 1) { showToast('Enter a valid amount'); return; }
-    if (amount > 999999) { showToast('Amount too large (max 9,99,999)'); return; }
+    if (amount > 999999) { showToast('Amount too large'); return; }
 
-    const note = noteInput.value.trim() || null;
-    Store.addExpense(currentPersonId, amount, note);
+    Store.addEntry(currentPersonId, amount, 'expense', noteInput.value.trim() || null);
     amountInput.value = '';
     noteInput.value = '';
     document.getElementById('add-expense-form').classList.remove('open');
@@ -773,59 +1094,102 @@
     showToast('Added ' + formatINR(amount));
   }
 
+  function settlePartial() {
+    const amountInput = document.getElementById('settle-amount-input');
+    const noteInput = document.getElementById('settle-note-input');
+    const amount = parseInt(amountInput.value, 10);
+
+    if (!amount || amount < 1) { showToast('Enter a valid amount'); return; }
+    if (amount > 999999) { showToast('Amount too large'); return; }
+
+    Store.addEntry(currentPersonId, amount, 'payment', noteInput.value.trim() || null);
+    amountInput.value = '';
+    noteInput.value = '';
+    document.getElementById('settle-form').classList.remove('open');
+    renderPersonDetail();
+    showToast('Payment of ' + formatINR(amount) + ' recorded');
+  }
+
+  function settleFull() {
+    const due = Store.getDueForPerson(currentPersonId);
+    if (due <= 0) { showToast('Nothing due'); return; }
+
+    const noteInput = document.getElementById('settle-note-input');
+    Store.addEntry(currentPersonId, due, 'payment', noteInput.value.trim() || 'Full settlement');
+    noteInput.value = '';
+    document.getElementById('settle-form').classList.remove('open');
+    renderPersonDetail();
+    showToast('Fully settled!');
+  }
+
   document.getElementById('expense-amount-input').addEventListener('keydown', (e) => {
     if (e.key === 'Enter') addExpense();
   });
+  document.getElementById('settle-amount-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') settlePartial();
+  });
 
-  function renderExpenseList() {
-    const expenses = Store.getExpenses(currentPersonId);
-    const container = document.getElementById('expense-list-items');
+  // ── History ──
+  function renderHistory() {
+    const entries = Store.getEntries(currentPersonId);
+    const container = document.getElementById('history-items');
     container.innerHTML = '';
 
-    if (expenses.length === 0) {
+    if (entries.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'empty-state';
       empty.style.padding = '24px';
       const p = document.createElement('p');
-      p.textContent = 'No expenses yet';
+      p.textContent = 'No history yet';
       empty.appendChild(p);
       container.appendChild(empty);
       return;
     }
 
-    expenses.forEach(expense => {
+    entries.forEach(entry => {
       const item = document.createElement('div');
-      item.className = 'expense-item';
+      item.className = 'history-item';
 
       const info = document.createElement('div');
-      info.className = 'expense-info';
+      info.className = 'history-info';
 
-      const amt = document.createElement('div');
-      amt.className = 'expense-amount';
-      amt.textContent = formatINR(expense.amount);
-      info.appendChild(amt);
+      const amtRow = document.createElement('div');
+      amtRow.style.display = 'flex';
+      amtRow.style.alignItems = 'center';
 
-      if (expense.note) {
+      const amt = document.createElement('span');
+      amt.className = 'history-amount ' + (entry.type === 'expense' ? 'expense-type' : 'payment-type');
+      amt.textContent = (entry.type === 'expense' ? '+' : '-') + formatINR(entry.amount);
+
+      const tag = document.createElement('span');
+      tag.className = 'history-tag ' + (entry.type === 'expense' ? 'tag-expense' : 'tag-payment');
+      tag.textContent = entry.type === 'expense' ? 'Expense' : 'Payment';
+
+      amtRow.appendChild(amt);
+      amtRow.appendChild(tag);
+      info.appendChild(amtRow);
+
+      if (entry.note) {
         const note = document.createElement('div');
-        note.className = 'expense-note';
-        note.textContent = expense.note;
+        note.className = 'history-note';
+        note.textContent = entry.note;
         info.appendChild(note);
       }
 
       const date = document.createElement('div');
-      date.className = 'expense-date';
-      date.textContent = formatDate(expense.createdAt);
+      date.className = 'history-date';
+      date.textContent = formatDate(entry.createdAt);
       info.appendChild(date);
 
       const delBtn = document.createElement('button');
       delBtn.className = 'delete-btn';
-      delBtn.innerHTML = '&#10005;';
-      delBtn.setAttribute('aria-label', 'Delete expense');
+      delBtn.textContent = '\u00d7';
+      delBtn.setAttribute('aria-label', 'Delete entry');
       delBtn.onclick = () => {
-        if (confirm('Delete this ' + formatINR(expense.amount) + ' expense?')) {
-          Store.deleteExpense(expense.id);
+        if (confirm('Delete this ' + entry.type + '?')) {
+          Store.deleteEntry(entry.id);
           renderPersonDetail();
-          showToast('Expense deleted');
+          showToast('Deleted');
         }
       };
 
