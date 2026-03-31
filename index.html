@@ -439,7 +439,7 @@
   </div>
   <div class="content">
     <div id="dashboard"></div>
-    <div id="people-list"></div>
+    <div id="people-list" style="margin-top:20px"></div>
     <button class="btn btn-outline" onclick="toggleAddPerson()" id="add-person-toggle" style="margin-top:8px">+ Add Person</button>
     <div id="add-person-form" class="inline-form" style="margin-top:12px">
       <div class="form-row">
@@ -738,7 +738,6 @@
     const totalDue = Store.getTotalDue();
     const peopleWithDue = people.filter(p => Store.getDueForPerson(p.id) > 0).length;
 
-    // Find who owes most
     let maxDue = 0;
     let maxPerson = null;
     people.forEach(p => {
@@ -748,24 +747,30 @@
 
     container.innerHTML = '';
 
-    const dashboard = document.createElement('div');
-    dashboard.className = 'dashboard';
+    // Section header
+    const header = document.createElement('div');
+    header.className = 'section-header';
+    header.textContent = 'Summary';
+    container.appendChild(header);
 
-    const totalDiv = document.createElement('div');
-    totalDiv.className = 'dashboard-total';
+    // Total due card
+    const totalCard = document.createElement('div');
+    totalCard.className = 'stat-card';
+    totalCard.style.marginBottom = '12px';
+    totalCard.style.padding = '20px';
+    const totalLabel = document.createElement('div');
+    totalLabel.className = 'stat-label';
+    totalLabel.textContent = 'Total Due to You';
+    const totalAmount = document.createElement('div');
+    totalAmount.className = 'stat-value';
+    totalAmount.style.fontSize = '28px';
+    totalAmount.style.letterSpacing = '-0.5px';
+    totalAmount.textContent = formatINR(totalDue);
+    totalCard.appendChild(totalLabel);
+    totalCard.appendChild(totalAmount);
+    container.appendChild(totalCard);
 
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = 'Total Due to You';
-    totalDiv.appendChild(label);
-
-    const amount = document.createElement('div');
-    amount.className = 'amount';
-    amount.textContent = formatINR(totalDue);
-    totalDiv.appendChild(amount);
-
-    dashboard.appendChild(totalDiv);
-
+    // Stats row
     const stats = document.createElement('div');
     stats.className = 'dashboard-stats';
 
@@ -806,9 +811,7 @@
     stats.appendChild(stat1);
     stats.appendChild(stat2);
     stats.appendChild(stat3);
-    dashboard.appendChild(stats);
-
-    container.appendChild(dashboard);
+    container.appendChild(stats);
   }
 
   // ── Recent Activity ──
